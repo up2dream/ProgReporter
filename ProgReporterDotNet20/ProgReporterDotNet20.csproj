@@ -4,19 +4,19 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AD96ABC9-AC2E-4B31-A571-3028D9B7F4DE}</ProjectGuid>
+    <ProjectGuid>{244802EB-EC3D-4E8C-9A39-C6FBFAC0B399}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ProgReporter</RootNamespace>
     <AssemblyName>ProgReporter</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Output\DotNet40\</OutputPath>
+    <OutputPath>..\Output\DotNet20\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Output\DotNet40\</OutputPath>
+    <OutputPath>..\Output\DotNet20\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,24 +33,39 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>ProgReporter.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>ProgReporterDotNet20.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helpers\CriptoService.cs" />
-    <Compile Include="Helpers\IoHelper.cs" />
-    <Compile Include="Helpers\WebService.cs" />
-    <Compile Include="IProgStats.cs" />
-    <Compile Include="LicenseType.cs" />
-    <Compile Include="Helpers\PhpDeserialization.cs" />
-    <Compile Include="ProgStats.cs" />
+    <Compile Include="..\ProgReporter\Helpers\CriptoService.cs">
+      <Link>Helpers\CriptoService.cs</Link>
+    </Compile>
+    <Compile Include="..\ProgReporter\Helpers\IoHelper.cs">
+      <Link>Helpers\IoHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\ProgReporter\Helpers\PhpDeserialization.cs">
+      <Link>Helpers\PhpDeserialization.cs</Link>
+    </Compile>
+    <Compile Include="..\ProgReporter\Helpers\WebService.cs">
+      <Link>Helpers\WebService.cs</Link>
+    </Compile>
+    <Compile Include="..\ProgReporter\IProgStats.cs">
+      <Link>IProgStats.cs</Link>
+    </Compile>
+    <Compile Include="..\ProgReporter\LicenseType.cs">
+      <Link>LicenseType.cs</Link>
+    </Compile>
+    <Compile Include="..\ProgReporter\ProgStats.cs">
+      <Link>ProgStats.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ProgReporter.pfx" />
+    <None Include="ProgReporterDotNet20.pfx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

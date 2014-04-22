@@ -53,8 +53,9 @@ namespace ProgReporter
 
             AppLicenseType = LicenseType.Unknown;
             countryCode = RegionInfo.CurrentRegion.Name;
+            SendUsageStatistics = true;
 
-            timer = new Timer {AutoReset = true, Interval = 60*1000};
+            timer = new Timer {AutoReset = true, Interval = 6*60*60*1000};
             timer.Elapsed += Timer_Elapsed;
         }
 
@@ -129,14 +130,25 @@ namespace ProgReporter
 
         private string GetUserId()
         {
-            string mac = string.Empty;
+            string user = string.Empty;
             foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
             {
                 if (nic.OperationalStatus != OperationalStatus.Up) continue;
-                mac = nic.GetPhysicalAddress().ToString();
+                user = nic.GetPhysicalAddress().ToString();
                 break;
             }
-            return mac;
+
+            if (string.IsNullOrEmpty(user))
+            {
+                string machineName = Environment.MachineName;
+                string userName = Environment.UserName;
+                string osVersion = Environment.OSVersion.ToString();
+                string processor = Environment.ProcessorCount.ToString(CultureInfo.InvariantCulture);
+                user = cryptoService.Encrypt(machineName + userName + osVersion + processor);
+            }
+
+            user = Truncate(user, 30);
+            return user;
         }
 
         private string GetFeatureClicks()
@@ -289,8 +301,8 @@ namespace ProgReporter
         {
             try
             {
-                string cripto = File.ReadAllText(file);
-                return cryptoService.Decrypt(cripto);
+                string crypto = File.ReadAllText(file);
+                return cryptoService.Decrypt(crypto);
             }
             catch (Exception e)
             {

@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgReporter", "ProgReporte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgReporterDotNet20", "ProgReporterDotNet20\ProgReporterDotNet20.csproj", "{244802EB-EC3D-4E8C-9A39-C6FBFAC0B399}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoAppWinForms", "DemoAppWinForms\DemoAppWinForms.csproj", "{2B8A8421-0B23-4888-BDFC-9E4A932BBF28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{244802EB-EC3D-4E8C-9A39-C6FBFAC0B399}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{244802EB-EC3D-4E8C-9A39-C6FBFAC0B399}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{244802EB-EC3D-4E8C-9A39-C6FBFAC0B399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B8A8421-0B23-4888-BDFC-9E4A932BBF28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B8A8421-0B23-4888-BDFC-9E4A932BBF28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B8A8421-0B23-4888-BDFC-9E4A932BBF28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B8A8421-0B23-4888-BDFC-9E4A932BBF28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

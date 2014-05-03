@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.NetworkInformation;
@@ -23,8 +24,7 @@ namespace ProgReporter
 {
     public class ProgStats : IProgStats
     {
-        private const string ServiceUrl = @"http://progreporter.com/service";
-        private const string LiveUrl = @"http://progreporter.com/service/live";
+        private const string ServiceUrl = @"http://progreporter.com/stats.php";
 
         private readonly CriptoService cryptoService;
         private readonly int[] featureClicks;
@@ -36,6 +36,7 @@ namespace ProgReporter
         private string applicationId;
         private string countryCode;
         private bool isStarted;
+        private bool isStoping;
         private Thread threadGeoPlugin;
         private Thread threadLive;
         private Thread threadWebClient;
@@ -55,7 +56,7 @@ namespace ProgReporter
             countryCode = RegionInfo.CurrentRegion.Name;
             SendUsageStatistics = true;
 
-            timer = new Timer {AutoReset = true, Interval = 6*60*60*1000};
+            timer = new Timer {AutoReset = true, Interval = 12*60*60*1000};
             timer.Elapsed += Timer_Elapsed;
         }
 
@@ -85,11 +86,11 @@ namespace ProgReporter
             appStartTime = DateTime.UtcNow;
             isStarted = true;
 
-            threadWebClient = new Thread(SendProgStatsFromPreviousRuns);
-            threadWebClient.Start();
-
             threadGeoPlugin = new Thread(ReadGeoPlugin);
             threadGeoPlugin.Start();
+
+            threadWebClient = new Thread(SendProgStatsFromPreviousRuns);
+            threadWebClient.Start();
 
             timer.Start();
         }
@@ -99,6 +100,7 @@ namespace ProgReporter
         /// </summary>
         public void AppStop()
         {
+            isStoping = true;
             if (!isStarted) return;
 
             if (timer.Enabled)
@@ -131,12 +133,15 @@ namespace ProgReporter
         private string GetUserId()
         {
             string user = string.Empty;
-            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                if (nic.OperationalStatus != OperationalStatus.Up) continue;
-                user = nic.GetPhysicalAddress().ToString();
-                break;
-            }
+
+            IEnumerable<NetworkInterface> netInterfaces = ioHelper.GetAllNetworkInterfaces();
+            if (netInterfaces != null)
+                foreach (NetworkInterface nic in netInterfaces)
+                {
+                    if (nic.OperationalStatus != OperationalStatus.Up) continue;
+                    user = nic.GetPhysicalAddress().ToString();
+                    break;
+                }
 
             if (string.IsNullOrEmpty(user))
             {
@@ -162,20 +167,21 @@ namespace ProgReporter
         private int GetRuntime()
         {
             var workTime = (int) (DateTime.UtcNow - appStartTime).TotalSeconds;
-            if (workTime < 0) workTime = 5;
-            if (workTime > 2*24*60*60)
-                workTime = 2*24*60*60;
-
+            if (workTime < 0)
+                workTime = 5; // Work time is minimum 5 seconds
+            if (workTime > 2*7*24*60*60)
+                workTime = 2*7*24*60*60; // and maximum 2 weeks
             return workTime;
         }
 
-        private string GetReportTime()
+        private string GetReportDate()
         {
             return DateTime.UtcNow.ToString("yyyy-MM-dd");
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
+            if (isStoping) return;
             threadLive = new Thread(SendLiveStats);
             threadLive.Start();
         }
@@ -184,26 +190,21 @@ namespace ProgReporter
         {
             string param =
                 "app_id=" + applicationId +
+                "&app_run=0" +
                 "&user_id=" + userId +
                 "&country_code=" + countryCode;
 
-            try
-            {
-                webService.SendPostRequest(LiveUrl, param);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            SendStats(ServiceUrl, param);
         }
 
         private string ComposeParameters()
         {
             string parameters =
                 "app_id=" + Truncate(applicationId, 40) + // String max 40 chars
+                "&app_run=1" +
                 "&user_id=" + Truncate(userId, 40) + // String max 40 chars
                 "&country_code=" + Truncate(countryCode, 2) + // String 2 chars: BG, US..
-                "&report_time=" + GetReportTime() + // String "yyyy-MM-dd"
+                "&report_time=" + GetReportDate() + // String "yyyy-MM-dd"
                 "&license_id=" + Truncate(AppLicenseId, 32) +
                 "&license_type=" + AppLicenseType + // Trial, Expired, Valid, NotValid, Unknown
                 "&stats_on=" + (SendUsageStatistics ? 1 : 0); // Integer: 0 or 1
@@ -221,7 +222,13 @@ namespace ProgReporter
             try
             {
                 string filePath = Path.Combine(ioHelper.AppDataFolder(), "ProgReporter");
-                string[] files = Directory.GetFiles(filePath, "*.prr");
+                IEnumerable<string> files = ioHelper.GetFiles(filePath, "*.prr");
+                if (files == null)
+                {
+                    SendInitialStats();
+                    return;
+                }
+
                 foreach (string file in files)
                 {
                     string fileName = Path.GetFileNameWithoutExtension(file);
@@ -231,13 +238,31 @@ namespace ProgReporter
                     string parameters = LoadProgStats(file);
 
                     if (string.IsNullOrEmpty(parameters))
+                    {
                         ioHelper.DeleteFile(file);
+                        return;
+                    }
 
                     string respond = SendStats(ServiceUrl, parameters).ToLower();
+
                     if (respond == "ok")
                         ioHelper.DeleteFile(file);
+
                     Thread.Sleep(1000);
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        private void SendInitialStats()
+        {
+            try
+            {
+                string parameters = ComposeParameters();
+                SendStats(ServiceUrl, parameters);
             }
             catch (Exception e)
             {
@@ -269,6 +294,7 @@ namespace ProgReporter
             try
             {
                 return webService.SendPostRequest(url, parameters);
+                //return webService.GetWebData(url + "?" + parameters);
             }
             catch (Exception e)
             {
@@ -282,14 +308,12 @@ namespace ProgReporter
             try
             {
                 string dirPath = Path.Combine(ioHelper.AppDataFolder(), "ProgReporter");
-                if (!Directory.Exists(dirPath))
-                    Directory.CreateDirectory(dirPath);
+                if (!ioHelper.DirectoryExists(dirPath))
+                    ioHelper.CreateDirectory(dirPath);
                 string fileName = string.Format("{0}_{1:yyyyMMddHHmmss}.prr",
                     Truncate(applicationId, 10), DateTime.Now);
                 string filePath = Path.Combine(dirPath, fileName);
-                using (var fs = new FileStream(filePath, FileMode.Create))
-                using (TextWriter writer = new StreamWriter(fs))
-                    writer.Write(report);
+                ioHelper.WriteTextFile(filePath, report);
             }
             catch (Exception e)
             {
@@ -301,14 +325,16 @@ namespace ProgReporter
         {
             try
             {
-                string crypto = File.ReadAllText(file);
+                string crypto = ioHelper.ReadTextFile(file);
+                if (string.IsNullOrEmpty(crypto))
+                    return null;
                 return cryptoService.Decrypt(crypto);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                return null;
             }
-            return null;
         }
 
         private string Truncate(string value, int maxLength)

@@ -7,7 +7,6 @@ namespace ProgReporter.Helpers
 {
     internal class PhpDeserialization
     {
-        private const bool XmlSafe = true;
         private readonly Encoding stringEncoding = new UTF8Encoding();
         private NumberFormatInfo nfi;
         private int pos;

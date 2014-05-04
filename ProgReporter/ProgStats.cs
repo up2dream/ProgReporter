@@ -202,8 +202,8 @@ namespace ProgReporter
             try
             {
                 string filePath = Path.Combine(ioHelper.AppDataFolder(), "ProgReporter");
-                IEnumerable<string> files = ioHelper.GetFiles(filePath, "*.prr");
-                if (files == null)
+                string[] files = ioHelper.GetFiles(filePath, "*.prr");
+                if (files == null || files.Length == 0)
                 {
                     SendInitialStats();
                     return;

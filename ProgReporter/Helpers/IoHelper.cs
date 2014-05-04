@@ -97,7 +97,7 @@ namespace ProgReporter.Helpers
             }
         }
 
-        public IEnumerable<string> GetFiles(string path, string searchPattern)
+        public string[] GetFiles(string path, string searchPattern)
         {
             try
             {

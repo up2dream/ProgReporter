@@ -32,7 +32,15 @@ namespace ProgReporter
         /// <summary>
         ///     Tells ProgStats that your application is started.
         /// </summary>
+        /// <param name="appId">An unique ID fro your app you receive from ProgReporter.com</param>
         void AppStart(string appId);
+
+        /// <summary>
+        ///     Tells ProgStats that your application is started.
+        /// </summary>
+        /// <param name="appId">An unique ID fro your app you receive from ProgReporter.com</param>
+        /// <param name="delay">Delay in seconds</param>
+        void AppStart(string appId, int delay);
 
         /// <summary>
         ///     Tells ProgStats that your application is going to be stopped.

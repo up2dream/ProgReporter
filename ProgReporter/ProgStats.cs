@@ -29,6 +29,8 @@ namespace ProgReporter
         private readonly CriptoService cryptoService;
         private readonly int[] featureClicks;
         private readonly IoHelper ioHelper;
+        private readonly Thread threadGeoPlugin;
+        private readonly Thread threadSendStats;
         private readonly Timer timer;
         private readonly string userId = string.Empty;
         private readonly WebService webService;
@@ -37,13 +39,9 @@ namespace ProgReporter
         private string countryCode;
         private bool isStarted;
         private bool isStoping;
-        private Thread threadGeoPlugin;
+        private int startDelay;
         private Thread threadLive;
-        private Thread threadWebClient;
 
-        /// <summary>
-        ///     Public constructor.
-        /// </summary>
         public ProgStats()
         {
             webService = new WebService();
@@ -51,53 +49,39 @@ namespace ProgReporter
             ioHelper = new IoHelper();
             featureClicks = new int[10];
             userId = GetUserId();
-
-            AppLicenseType = LicenseType.Unknown;
             countryCode = RegionInfo.CurrentRegion.Name;
-            SendUsageStatistics = true;
-
+            threadGeoPlugin = new Thread(ReadGeoPlugin);
+            threadSendStats = new Thread(SendProgStatsFromPreviousRuns);
             timer = new Timer {AutoReset = true, Interval = 12*60*60*1000};
             timer.Elapsed += Timer_Elapsed;
+
+            AppLicenseType = LicenseType.Unknown;
+            AppLicenseId = userId;
+            SendUsageStatistics = true;
         }
 
-        /// <summary>
-        ///     Sets the license type of your application.
-        ///     Trial, Expired, Valid, NotValid, Unknown
-        /// </summary>
         public LicenseType AppLicenseType { private get; set; }
 
-        /// <summary>
-        ///     Id string for your application license. Up to 40 chars.
-        ///     Used only with Valid license type.
-        /// </summary>
         public string AppLicenseId { private get; set; }
 
-        /// <summary>
-        ///     Sets if ProgReporter sends usage statistics like feature clicks, runtime..
-        /// </summary>
         public bool SendUsageStatistics { private get; set; }
 
-        /// <summary>
-        ///     Tells ProgStats that your application is started.
-        /// </summary>
         public void AppStart(string appId)
         {
+            AppStart(appId, 0);
+        }
+
+        public void AppStart(string appId, int delay)
+        {
+            startDelay = delay > 0 ? delay : 0;
             applicationId = appId;
             appStartTime = DateTime.UtcNow;
             isStarted = true;
 
-            threadGeoPlugin = new Thread(ReadGeoPlugin);
             threadGeoPlugin.Start();
-
-            threadWebClient = new Thread(SendProgStatsFromPreviousRuns);
-            threadWebClient.Start();
-
             timer.Start();
         }
 
-        /// <summary>
-        ///     Tells ProgStats that your application is going to be stopped.
-        /// </summary>
         public void AppStop()
         {
             isStoping = true;
@@ -106,8 +90,8 @@ namespace ProgReporter
             if (timer.Enabled)
                 timer.Stop();
 
-            if (threadWebClient != null)
-                threadWebClient.Abort();
+            if (threadSendStats != null)
+                threadSendStats.Abort();
 
             if (threadLive != null)
                 threadLive.Abort();
@@ -120,10 +104,6 @@ namespace ProgReporter
             SaveProgStats(crypto);
         }
 
-        /// <summary>
-        ///     Saves a record that a feature with a specific index was used.
-        /// </summary>
-        /// <param name="index">Index of the feature.</param>
         public void FeatureClick(int index)
         {
             if (index < 0 || index >= featureClicks.Length) return;
@@ -274,6 +254,7 @@ namespace ProgReporter
         {
             try
             {
+                Thread.Sleep(startDelay*1000);
                 const string geoUrl = @"http://www.geoplugin.net/php.gp";
                 string input = webService.GetWebData(geoUrl);
                 var deserializer = new PhpDeserialization();
@@ -286,6 +267,10 @@ namespace ProgReporter
             catch (Exception e)
             {
                 Console.WriteLine(e);
+            }
+            finally
+            {
+                threadSendStats.Start();
             }
         }
 

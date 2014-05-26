@@ -44,6 +44,8 @@ namespace ProgReporter
 
         public ProgStats()
         {
+            isStarted = false;
+            isStoping = false;
             webService = new WebService();
             cryptoService = new CriptoService();
             ioHelper = new IoHelper();
@@ -66,6 +68,8 @@ namespace ProgReporter
 
         public bool SendUsageStatistics { private get; set; }
 
+        public string AppVersion { private get; set; }
+
         public void AppStart(string appId)
         {
             AppStart(appId, 0);
@@ -73,6 +77,8 @@ namespace ProgReporter
 
         public void AppStart(string appId, int delay)
         {
+            if (isStarted) return;
+
             startDelay = delay > 0 ? delay : 0;
             applicationId = appId;
             appStartTime = DateTime.UtcNow;
@@ -180,17 +186,18 @@ namespace ProgReporter
         private string ComposeParameters()
         {
             string parameters =
-                "app_id=" + Truncate(applicationId, 40) + // String max 40 chars
+                "app_id=" + Truncate(applicationId, 40) +     // String max 40 chars
                 "&app_run=1" +
-                "&user_id=" + Truncate(userId, 40) + // String max 40 chars
+                "&user_id=" + Truncate(userId, 40) +          // String max 40 chars
                 "&country_code=" + Truncate(countryCode, 2) + // String 2 chars: BG, US..
-                "&report_time=" + GetReportDate() + // String "yyyy-MM-dd"
+                "&report_time=" + GetReportDate() +           // String "yyyy-MM-dd"
                 "&license_id=" + Truncate(AppLicenseId, 32) +
-                "&license_type=" + AppLicenseType + // Trial, Expired, Valid, NotValid, Unknown
+                "&license_type=" + AppLicenseType +           // Trial, Expired, Valid, NotValid, Unknown
+                "&app_version=" + Truncate(AppVersion, 32) +  // Version string
                 "&stats_on=" + (SendUsageStatistics ? 1 : 0); // Integer: 0 or 1
 
             if (SendUsageStatistics)
-                parameters +=
+                parameters += 
                     "&app_runtime=" + GetRuntime() + // Integer
                     GetFeatureClicks();
 
@@ -279,7 +286,6 @@ namespace ProgReporter
             try
             {
                 return webService.SendPostRequest(url, parameters);
-                //return webService.GetWebData(url + "?" + parameters);
             }
             catch (Exception e)
             {

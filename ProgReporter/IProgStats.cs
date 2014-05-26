@@ -14,7 +14,7 @@ namespace ProgReporter
     {
         /// <summary>
         ///     Sets the license type of your application.
-        ///     Trial, Expired, Valid, NotValid, Unknown
+        ///     Fre, Trial, Expired, Valid, NotValid, Unknown
         /// </summary>
         LicenseType AppLicenseType { set; }
 
@@ -28,6 +28,11 @@ namespace ProgReporter
         ///     Sets if ProgReporter sends usage statistics like feature clicks, runtime..
         /// </summary>
         bool SendUsageStatistics { set; }
+
+        /// <summary>
+        ///     Sets a version string for your program.
+        /// </summary>
+        string AppVersion { set; }
 
         /// <summary>
         ///     Tells ProgStats that your application is started.

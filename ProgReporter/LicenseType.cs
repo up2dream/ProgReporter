@@ -12,6 +12,7 @@ namespace ProgReporter
 {
     public enum LicenseType
     {
+        Free,
         Trial,
         Expired,
         Valid,

@@ -1,4 +1,14 @@
-﻿using System;
+﻿//==============================================================
+// ProgReporter
+// Copyright © Miroslav Popov. All rights reserved.
+//==============================================================
+// THIS CODE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+// EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE.
+//==============================================================
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
@@ -19,16 +29,22 @@ namespace DemoAppWinForms
         private void MainForm_Load(object sender, EventArgs e)
         {
             stats = new ProgStats();
-            stats.AppStart("cbc15a23946e34067c0085b2087ac33bf221a7d5");
 
             // If your application uses licensing, you can set the license type of your app.
-            // Available license types are: Trial, Expired, Valid, NotValid, Unknown
-            stats.AppLicenseType = LicenseType.Valid;
+            // Available license types are: Free, Trial, Expired, Valid, NotValid, Unknown
+            stats.AppLicenseType = LicenseType.Free;
+
+            // Sets application version.
+            stats.AppVersion = Application.ProductVersion;
+
+            // Begin proceding stats
+            // Sets the particular application Id and optionally a starting delay in seconds.
+            stats.AppStart("cbc15a23946e34067c0085b2087ac33bf221a7d5", 3);
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Tell ProgReporter you are going to stop your application
+            // Tells ProgReporter that you are going to stop your application
             stats.AppStop();
         }
 

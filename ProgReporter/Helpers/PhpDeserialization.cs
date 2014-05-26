@@ -114,7 +114,7 @@ namespace ProgReporter.Helpers
                     return htRet;
                 default:
                     return "";
-            } //switch
-        } //unserialzie(object)	
+            }
+        }
     }
 }

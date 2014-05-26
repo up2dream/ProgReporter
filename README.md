@@ -18,7 +18,7 @@ Info
 
 All resources about ProgReporter can be found at [http://ProgReporter.com/](http://ProgReporter.com/)
 
-For additional information see [http://ProgReporter/docs/](http://ProgReporter/docs/)
+For additional information see [http://ProgReporter.com/docs/](http://ProgReporter.com/docs/)
 
 
 Usage

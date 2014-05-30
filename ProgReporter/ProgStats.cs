@@ -24,7 +24,8 @@ namespace ProgReporter
 {
     public class ProgStats : IProgStats
     {
-        private const string ServiceUrl = @"http://progreporter.com/stats.php";
+        private const string StatsServiceUrl = @"http://progreporter.com/stats.php";
+        private const string EmailServiceUrl = @"http://progreporter.com/sendmail.php";
 
         private readonly CriptoService cryptoService;
         private readonly int[] featureClicks;
@@ -39,7 +40,6 @@ namespace ProgReporter
         private string countryCode;
         private bool isStarted;
         private bool isStoping;
-        private int startDelay;
         private Thread threadLive;
 
         public ProgStats()
@@ -72,14 +72,8 @@ namespace ProgReporter
 
         public void AppStart(string appId)
         {
-            AppStart(appId, 0);
-        }
-
-        public void AppStart(string appId, int delay)
-        {
             if (isStarted) return;
 
-            startDelay = delay > 0 ? delay : 0;
             applicationId = appId;
             appStartTime = DateTime.UtcNow;
             isStarted = true;
@@ -114,6 +108,26 @@ namespace ProgReporter
         {
             if (index < 0 || index >= featureClicks.Length) return;
             featureClicks[index]++;
+        }
+
+        public void SendEmail(string subject, string content)
+        {
+            var emailThread = new Thread(() =>
+            {
+                try
+                {
+                    string param =
+                        "app_id=" + applicationId +
+                        "&mail_subject=" + subject +
+                        "&mail_content=" + content;
+                    SendRequest(EmailServiceUrl, param);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            });
+            emailThread.Start();
         }
 
         private string GetUserId()
@@ -180,12 +194,12 @@ namespace ProgReporter
                 "&user_id=" + userId +
                 "&country_code=" + countryCode;
 
-            SendStats(ServiceUrl, param);
+            SendRequest(StatsServiceUrl, param);
         }
 
         private string ComposeParameters()
         {
-            string parameters =
+            string param =
                 "app_id=" + Truncate(applicationId, 40) +     // String max 40 chars
                 "&app_run=1" +
                 "&user_id=" + Truncate(userId, 40) +          // String max 40 chars
@@ -197,11 +211,11 @@ namespace ProgReporter
                 "&stats_on=" + (SendUsageStatistics ? 1 : 0); // Integer: 0 or 1
 
             if (SendUsageStatistics)
-                parameters += 
+                param += 
                     "&app_runtime=" + GetRuntime() + // Integer
                     GetFeatureClicks();
 
-            return parameters;
+            return param;
         }
 
         private void SendProgStatsFromPreviousRuns()
@@ -230,7 +244,7 @@ namespace ProgReporter
                         return;
                     }
 
-                    string respond = SendStats(ServiceUrl, parameters).ToLower();
+                    string respond = SendRequest(StatsServiceUrl, parameters).ToLower();
 
                     if (respond == "ok")
                         ioHelper.DeleteFile(file);
@@ -249,7 +263,7 @@ namespace ProgReporter
             try
             {
                 string parameters = ComposeParameters();
-                SendStats(ServiceUrl, parameters);
+                SendRequest(StatsServiceUrl, parameters);
             }
             catch (Exception e)
             {
@@ -261,7 +275,6 @@ namespace ProgReporter
         {
             try
             {
-                Thread.Sleep(startDelay*1000);
                 const string geoUrl = @"http://www.geoplugin.net/php.gp";
                 string input = webService.GetWebData(geoUrl);
                 var deserializer = new PhpDeserialization();
@@ -281,7 +294,7 @@ namespace ProgReporter
             }
         }
 
-        private string SendStats(string url, string parameters)
+        private string SendRequest(string url, string parameters)
         {
             try
             {

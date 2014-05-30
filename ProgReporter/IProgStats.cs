@@ -37,15 +37,8 @@ namespace ProgReporter
         /// <summary>
         ///     Tells ProgStats that your application is started.
         /// </summary>
-        /// <param name="appId">An unique ID fro your app you receive from ProgReporter.com</param>
+        /// <param name="appId">An unique ID for your app you receive from ProgReporter.com</param>
         void AppStart(string appId);
-
-        /// <summary>
-        ///     Tells ProgStats that your application is started.
-        /// </summary>
-        /// <param name="appId">An unique ID fro your app you receive from ProgReporter.com</param>
-        /// <param name="delay">Delay in seconds</param>
-        void AppStart(string appId, int delay);
 
         /// <summary>
         ///     Tells ProgStats that your application is going to be stopped.
@@ -57,5 +50,12 @@ namespace ProgReporter
         /// </summary>
         /// <param name="index">Index of the feature.</param>
         void FeatureClick(int index);
+
+        /// <summary>
+        ///     Sends an email to the owner of the program
+        /// </summary>
+        /// <param name="subject">Email subject</param>
+        /// <param name="content">Email content</param>
+        void SendEmail(string subject, string content);
     }
 }

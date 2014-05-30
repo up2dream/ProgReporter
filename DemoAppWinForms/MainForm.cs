@@ -38,8 +38,8 @@ namespace DemoAppWinForms
             stats.AppVersion = Application.ProductVersion;
 
             // Begin proceding stats
-            // Sets the particular application Id and optionally a starting delay in seconds.
-            stats.AppStart("cbc15a23946e34067c0085b2087ac33bf221a7d5", 3);
+            // Sets the particular application Id.
+            stats.AppStart("cbc15a23946e34067c0085b2087ac33bf221a7d5");
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -57,9 +57,16 @@ namespace DemoAppWinForms
             if (filePath == string.Empty)
                 return;
 
-            using (var stream = new FileStream(filePath, FileMode.Open))
-            using (TextReader reader = new StreamReader(stream))
-                textBox.Text = reader.ReadToEnd();
+            try
+            {
+                using (var stream = new FileStream(filePath, FileMode.Open))
+                using (TextReader reader = new StreamReader(stream))
+                    textBox.Text = reader.ReadToEnd();
+            }
+            catch (Exception exception)
+            {
+                stats.SendEmail("Exception", exception.Message);
+            }
         }
 
         private void ItmSave_Click(object sender, EventArgs e)
@@ -100,15 +107,22 @@ namespace DemoAppWinForms
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception.Message);
+                stats.SendEmail("Exception", exception.Message);
             }
         }
 
         private void SaveTextToFile()
         {
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            using (TextWriter writer = new StreamWriter(stream))
-                writer.Write(textBox.Text);
+            try
+            {
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                using (TextWriter writer = new StreamWriter(stream))
+                    writer.Write(textBox.Text);
+            }
+            catch (Exception exception)
+            {
+                stats.SendEmail("Exception", exception.Message);
+            }
         }
 
         private string GetSaveAsPath()
@@ -141,6 +155,18 @@ namespace DemoAppWinForms
             return saveFileDialog.ShowDialog() == DialogResult.OK
                 ? saveFileDialog.FileName
                 : string.Empty;
+        }
+
+        private void itmFeedback_Click(object sender, EventArgs e)
+        {
+            var feedbackForm = new FeedbackForm();
+            feedbackForm.FeedbackSend += (o, args) =>
+            {
+                string content = string.Format("Sender: {0} \r\n\r\n {1}",
+                    args.Email, args.Content);
+                stats.SendEmail("Feedback", content);
+            };
+            feedbackForm.ShowDialog();
         }
     }
 }

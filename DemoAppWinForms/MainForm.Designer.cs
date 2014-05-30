@@ -38,6 +38,7 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.textBox = new System.Windows.Forms.TextBox();
+            this.itmFeedback = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -46,7 +47,8 @@
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.itmFile,
-            this.itmHelp});
+            this.itmHelp,
+            this.itmFeedback});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(442, 24);
@@ -130,6 +132,14 @@
             this.textBox.Size = new System.Drawing.Size(442, 237);
             this.textBox.TabIndex = 2;
             // 
+            // itmFeedback
+            // 
+            this.itmFeedback.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.itmFeedback.Name = "itmFeedback";
+            this.itmFeedback.Size = new System.Drawing.Size(98, 20);
+            this.itmFeedback.Text = "Send Feedback";
+            this.itmFeedback.Click += new System.EventHandler(this.itmFeedback_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -164,6 +174,7 @@
         private System.Windows.Forms.TextBox textBox;
         private System.Windows.Forms.ToolStripMenuItem itmHelp;
         private System.Windows.Forms.ToolStripMenuItem itmGoHelp;
+        private System.Windows.Forms.ToolStripMenuItem itmFeedback;
     }
 }
 

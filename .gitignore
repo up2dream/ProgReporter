@@ -3,7 +3,8 @@ obj
 bin
 *.exe
 *DotSettings*
-/Output/*.pdb
+/Output/DotNet20/*.*
+/Output/DotNet40/*.*
 /ProgReporter/*ReSharper*
 /ProgReporter/*.suo
 /ProgReporter/*.sln.docstates
